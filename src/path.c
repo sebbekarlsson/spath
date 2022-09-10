@@ -1,0 +1,149 @@
+#include <spath/spath.h>
+#include <spath/macros.h>
+#include <stdint.h>
+#include <string.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <limits.h>
+
+typedef struct {
+  char* left;
+  char* right;
+} PATHStringSlice;
+
+int spath_string_slice_at(const char *str, uint64_t pos, PATHStringSlice *slice) {
+  slice->left = 0;
+  slice->right = 0;
+  if (!str) return 0;
+  uint64_t len = strlen(str);
+  if (!len) return 0;
+  pos = pos % len;
+
+  const char *right = &str[pos];
+  if (!right) return 0;
+  uint64_t right_len = strlen(right);
+  if (!right_len) return 0;
+  int64_t left_len = len - right_len;
+
+  if (left_len <= 0) return 0;
+
+  char *r = strdup(right);
+  char *l = (char *)calloc(left_len + 1, sizeof(char));
+  memcpy(&l[0], &str[0], left_len * sizeof(char));
+
+  slice->left = l;
+  slice->right = r;
+
+  return 1;
+}
+
+void spath_string_slice_clear(PATHStringSlice *slice) {
+  if (slice->left) free(slice->left);
+  if (slice->right) free(slice->right);
+
+  slice->left = 0;
+  slice->right = 0;
+}
+
+int spath_get_barename(const char* path, char* out) {
+  if (!path) return 0;
+
+  char* ptr = strchr(path, '/');
+
+  if (!ptr) {
+    sprintf(out, "%s", path);
+    return 1;
+  }
+
+
+  int64_t pos = (ptr - path)+1;
+
+  PATHStringSlice slice = {0};
+  if (!spath_string_slice_at(path, pos, &slice)) return 0;
+
+
+  if (!slice.right) {
+    spath_string_slice_clear(&slice);
+    return 0;
+  }
+
+  sprintf(out, "%s", slice.right);
+
+  spath_string_slice_clear(&slice);
+
+
+  if (strchr(out, '/') != 0) {
+    return spath_get_barename(out, out);
+  }
+
+  return 1;
+}
+
+int spath_get_dirname(const char* path, char* out) {
+  if (!path || !out) return 0;
+
+  char* ptr = strrchr(path, '/');//strstr(path, bare);
+  if (!ptr) return 0;
+
+  int64_t len = ptr - path;
+  memcpy(&out[0], &path[0], (len+1) * sizeof(char));
+
+  out[len] = 0;
+  return 1;
+}
+
+char *spath_string_append(char **inputstr, const char *other) {
+  if (!inputstr || !*inputstr) {
+    *inputstr = (char *)calloc(2, sizeof(char));
+  }
+  char *str = *inputstr;
+
+  uint32_t old_len = strlen(str);
+  uint32_t other_len = strlen(other);
+  uint32_t new_len = old_len + other_len;
+
+  str = (char *)realloc(str, (new_len + 1) * sizeof(char));
+  strcat(str, other);
+  *inputstr = str;
+
+  return str;
+}
+
+unsigned int spath_string_starts_with_char(const char *str, char c) {
+  if (!str) return 0;
+  return str[0] == c;
+}
+unsigned int spath_string_ends_with_char(const char *str, char c) {
+  if (!str) return 0;
+  uint32_t len = strlen(str);
+  return str[MAX(0, len - 1)] == c;
+}
+
+char* spath_join(const char* a, const char* b) {
+  uint32_t len_a = strlen(a);
+  uint32_t len_b = strlen(b);
+  if (len_a >= PATH_MAX || len_b >= PATH_MAX) return 0;
+  char buff_a[len_a + 1];
+  char buff_b[len_b + 1];
+  memcpy(&buff_a[0], a, (len_a + 1) * sizeof(char));
+  memcpy(&buff_b[0], b, (len_b + 1) * sizeof(char));
+
+  unsigned int needs_slash = 0;
+
+  if (spath_string_ends_with_char(a, '/') &&
+      spath_string_starts_with_char(b, '/')) {
+    buff_a[MAX(len_a - 1, 0)] = 0;
+  } else if (!spath_string_ends_with_char(a, '/') &&
+             !spath_string_starts_with_char(b, '/')) {
+    needs_slash = 1;
+  }
+
+  char* newstr = 0;
+  spath_string_append(&newstr, buff_a);
+  if (needs_slash) {
+    spath_string_append(&newstr, "/");
+  }
+  spath_string_append(&newstr, buff_b);
+
+  return newstr;
+}
