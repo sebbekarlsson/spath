@@ -10,4 +10,7 @@ typedef void (*SpathIterDirCallback)(const char *name, const char *path,
 
 int spath_iter_dir(const char *path, SpathIterDirCallback callback,
                    void *user_ptr, int max_level, int levels);
+
+int spath_get_dirname(const char *path, char *out);
+
 #endif
