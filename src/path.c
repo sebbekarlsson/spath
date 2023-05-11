@@ -197,3 +197,23 @@ int spath_iter_dir(const char *path, SpathIterDirCallback callback,
   closedir(dp);
   return 1;
 }
+
+int spath_change_extension(const char* path, const char* ext, char out[PATH_MAX]) {
+  if (!path || !ext) return 0;
+
+  memset(&out[0], 0, PATH_MAX * sizeof(char));
+
+  char* dot = strrchr(path, '.');
+  if (!dot) return 0;
+
+  int64_t len = strlen(path);
+  if (len <= 0) return 0;
+  int64_t ext_len = strlen(ext);
+  if (ext_len <= 0) return 0;
+
+  int64_t pos = dot - path;
+
+  memcpy(&out[0], &path[0], pos * sizeof(char));
+  memcpy(&out[pos], &ext[0], ext_len * sizeof(char));
+  return 1;
+}
