@@ -2,6 +2,8 @@
 #define SPATH_H
 #include <limits.h>
 char *spath_join(const char *a, const char *b);
+int spath_join_no_alloc(const char *a, const char *b, char *out);
+
 
 int spath_get_barename(const char *path, char *out);
 

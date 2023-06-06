@@ -131,6 +131,28 @@ unsigned int spath_string_ends_with_char(const char *str, char c) {
   return str[MAX(0, len - 1)] == c;
 }
 
+int spath_join_no_alloc(const char *a, const char *b, char *out) {
+  if (!a || !b || !out) {
+    return 0;
+  }
+
+  size_t a_len = strlen(a);
+  size_t b_len = strlen(b);
+
+  if (a[a_len - 1] == '/' && b[0] == '/') {
+    if (sprintf(out, "%s%s", a, b + 1) < 0)
+      return 0;
+  } else if (a[a_len - 1] != '/' && b[0] != '/') {
+    if (sprintf(out, "%s/%s", a, b) < 0)
+      return 0;
+  } else {
+    if (sprintf(out, "%s%s", a, b) < 0)
+      return 0;
+  }
+
+  return 1;
+}
+
 char *spath_join(const char *a, const char *b) {
   uint32_t len_a = strlen(a);
   uint32_t len_b = strlen(b);
@@ -198,18 +220,23 @@ int spath_iter_dir(const char *path, SpathIterDirCallback callback,
   return 1;
 }
 
-int spath_change_extension(const char* path, const char* ext, char out[PATH_MAX]) {
-  if (!path || !ext) return 0;
+int spath_change_extension(const char *path, const char *ext,
+                           char out[PATH_MAX]) {
+  if (!path || !ext)
+    return 0;
 
   memset(&out[0], 0, PATH_MAX * sizeof(char));
 
-  char* dot = strrchr(path, '.');
-  if (!dot) return 0;
+  char *dot = strrchr(path, '.');
+  if (!dot)
+    return 0;
 
   int64_t len = strlen(path);
-  if (len <= 0) return 0;
+  if (len <= 0)
+    return 0;
   int64_t ext_len = strlen(ext);
-  if (ext_len <= 0) return 0;
+  if (ext_len <= 0)
+    return 0;
 
   int64_t pos = dot - path;
 
