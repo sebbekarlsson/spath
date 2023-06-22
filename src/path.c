@@ -203,17 +203,15 @@ int spath_iter_dir(const char *path, SpathIterDirCallback callback,
       continue;
     if (strcmp(entry->d_name, "..") == 0)
       continue;
-    char *next_path = spath_join(path, entry->d_name);
-    if (!next_path)
-      continue;
+    char next_path[PATH_MAX];
+    memset(&next_path[0], 0, PATH_MAX*sizeof(char));
+    if (!spath_join_no_alloc(path, entry->d_name, next_path)) continue;
 
     if (entry->d_type == DT_DIR) {
       spath_iter_dir(next_path, callback, user_ptr, max_level, levels + 1);
     } else {
       callback(entry->d_name, next_path, user_ptr);
     }
-
-    free(next_path);
   }
 
   closedir(dp);
