@@ -204,8 +204,9 @@ int spath_iter_dir(const char *path, SpathIterDirCallback callback,
     if (strcmp(entry->d_name, "..") == 0)
       continue;
     char next_path[PATH_MAX];
-    memset(&next_path[0], 0, PATH_MAX*sizeof(char));
-    if (!spath_join_no_alloc(path, entry->d_name, next_path)) continue;
+    memset(&next_path[0], 0, PATH_MAX * sizeof(char));
+    if (!spath_join_no_alloc(path, entry->d_name, next_path))
+      continue;
 
     if (entry->d_type == DT_DIR) {
       spath_iter_dir(next_path, callback, user_ptr, max_level, levels + 1);
@@ -241,4 +242,49 @@ int spath_change_extension(const char *path, const char *ext,
   memcpy(&out[0], &path[0], pos * sizeof(char));
   memcpy(&out[pos], &ext[0], ext_len * sizeof(char));
   return 1;
+}
+
+SPathIterator spath_iterator_init(const char *path) {
+  return (SPathIterator){
+      .buff = path, .i = 0, .length = path ? strlen(path) : 0};
+}
+
+int spath_iterator_next(SPathIterator *it, char *next_path, int64_t capacity) {
+  if (it == 0 || it->buff == 0 || it->length <= 0 || it->i >= it->length ||
+      capacity <= 0)
+    return 0;
+
+  char c = it->buff[it->i];
+  if (c == 0)
+    return 0;
+
+  const char *start = &it->buff[it->i];
+
+  int64_t next_length = 0;
+
+  while (c != 0 && it->i < it->length) {
+    c = it->buff[it->i++];
+    next_length += 1;
+
+    if (c == '/') {
+      break;
+    }
+  }
+
+  if (next_length <= 0)
+    return 0;
+
+  it->next_path_length = next_length;
+
+  if (next_length >= PATH_MAX - 1) {
+    // Cannot fit next path;
+    return 0;
+  }
+
+  int64_t copy_length = MIN(next_length, capacity);
+
+  memset(&next_path[0], 0, capacity * sizeof(char));
+  memcpy(&next_path[0], start, copy_length);
+
+  return next_length > 0;
 }

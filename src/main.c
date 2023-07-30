@@ -4,22 +4,17 @@
 #include <stdlib.h>
 #include <string.h>
 
+
 int main(int argc, char* argv[]) {
 
-  char tmp[PATH_MAX];
+  const char* some_path = "/home/johndoe/Documents/secret/tmp/xyz/123/Pictures/dog.jpg";
 
+  SPathIterator it = spath_iterator_init(some_path);
 
-  memset(&tmp[0], 0, PATH_MAX*sizeof(char));
-  spath_join_no_alloc("/home/ianertson", "image.png", tmp);
-  printf("%s\n", tmp);
-
-  memset(&tmp[0], 0, PATH_MAX*sizeof(char));
-  spath_join_no_alloc("/home/ianertson/", "image.png", tmp);
-  printf("%s\n", tmp);
-
-  memset(&tmp[0], 0, PATH_MAX*sizeof(char));
-  spath_join_no_alloc("/home/ianertson/", "/image.png", tmp);
-  printf("%s\n", tmp);
+  char slice[PATH_MAX] = {0};
+  while (spath_iterator_next(&it, slice, PATH_MAX-1)) {
+    printf("%s\n", slice);
+  }
 
   return 0;
 }
