@@ -14,11 +14,14 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 file(GLOB sourcefiles ${CMAKE_CURRENT_SOURCE_DIR}/src/*.c)
 
 add_executable(spath_e ${sourcefiles})
-add_library(spath SHARED ${sourcefiles})
+add_library(spath_shared SHARED ${sourcefiles})
 add_library(spath_static STATIC ${sourcefiles})
 
+target_compile_options(spath_shared PUBLIC -fPIC)
+
+
 target_include_directories(
-  spath
+  spath_static
     PUBLIC
       $<INSTALL_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
       $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
@@ -27,9 +30,8 @@ target_include_directories(
       ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 
-
-target_include_directories(
-  spath_static
+ target_include_directories(
+  spath_shared
     PUBLIC
       $<INSTALL_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
       $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
