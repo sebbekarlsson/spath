@@ -296,9 +296,6 @@ int spath_get_extension(const char* path, char* out, int capacity) {
 
   if (dot == 0 || dot == path) return 0;
 
-  int64_t len = dot - path;
-  if (len <= 0 || len >= capacity) return 0;
-
   snprintf(&out[0], capacity-1, "%s", dot);
 
   return 1;
