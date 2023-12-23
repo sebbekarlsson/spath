@@ -9,12 +9,11 @@ int main(int argc, char* argv[]) {
 
   const char* some_path = "/home/johndoe/Documents/secret/tmp/xyz/123/Pictures/dog.jpg";
 
-  SPathIterator it = spath_iterator_init(some_path);
+  char ext[256] = {0};
 
-  char slice[PATH_MAX] = {0};
-  while (spath_iterator_next(&it, slice, PATH_MAX-1)) {
-    printf("%s\n", slice);
-  }
+  spath_get_extension(some_path, ext, 256);
+
+  printf("ext(%s)\n", ext);
 
   return 0;
 }

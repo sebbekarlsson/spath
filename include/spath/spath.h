@@ -31,5 +31,7 @@ int spath_get_dirname(const char *path, char *out);
 
 int spath_change_extension(const char* path, const char* ext, char out[PATH_MAX]);
 
+int spath_get_extension(const char* path, char* out, int capacity);
+
 
 #endif

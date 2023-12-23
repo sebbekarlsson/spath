@@ -288,3 +288,18 @@ int spath_iterator_next(SPathIterator *it, char *next_path, int64_t capacity) {
 
   return next_length > 0;
 }
+
+int spath_get_extension(const char* path, char* out, int capacity) {
+  if (path == 0 || out == 0 || capacity < 3) return 0;
+
+  const char *dot = strrchr(path, '.');
+
+  if (dot == 0 || dot == path) return 0;
+
+  int64_t len = dot - path;
+  if (len <= 0 || len >= capacity) return 0;
+
+  snprintf(&out[0], capacity-1, "%s", dot);
+
+  return 1;
+}
